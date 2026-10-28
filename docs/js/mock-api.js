@@ -1,7 +1,7 @@
 /* 静态演示版 mock API：拦截 /api/* 请求，用 localStorage 模拟后端。
    仅用于 GitHub Pages 演示，数据保存在当前浏览器。 */
 (function () {
-  const KEY = 'jb_demo_db_v2';
+  const KEY = 'jb_demo_db_v3';
   const FEE_RATE = 0.1;
   const memFiles = {};
   let db = null;
