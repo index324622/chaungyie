@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>学生端 · 兼职众包平台</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+</head>
+<body>
+<div class="topbar">
+  <div class="logo"><span class="dot"></span>兼职众包</div>
+  <div class="topnav" id="nav"></div>
+  <div class="spacer"></div>
+  <div class="userbox" id="userbox"></div>
+</div>
+
+<div class="container">
+  <div id="cert-banner" class="hide"></div>
+  <!-- 任务大厅 -->
+  <section data-pane="tasks">
+    <div class="page-title">任务大厅</div>
+    <div class="page-sub">真实岗位、先审后发；报名后可查看录用进度，任务款由平台托管。</div>
+    <div class="section">
+      <div class="row" style="margin-bottom:14px;">
+        <select id="filter-category" style="border:1px solid #d7dfeb;border-radius:9px;padding:8px 12px;font-size:13.5px;">
+          <option value="全部">全部类目</option>
+          <option>门店兼职</option><option>校园推广</option><option>展会协助</option><option>问卷调研</option><option>数据标注</option><option>跑腿配送</option>
+        </select>
+        <input id="filter-keyword" placeholder="搜索任务关键词" style="border:1px solid #d7dfeb;border-radius:9px;padding:8px 12px;font-size:13.5px;min-width:220px;">
+        <select id="filter-sort" class="sort-select">
+          <option value="new">最新发布</option>
+          <option value="price">报酬最高</option>
+          <option value="hot">最多人报名</option>
+          <option value="dist">距离最近</option>
+        </select>
+        <button class="btn sm" id="btn-search">搜索</button>
+        <span class="muted" id="task-count" style="margin-left:auto;"></span>
+      </div>
+      <div class="row" style="margin-bottom:12px;">
+        <div class="seg"><button data-view="list" class="active">列表</button><button data-view="map">地图找活</button></div>
+        <button class="btn sm primary" id="btn-locate">使用我的位置</button>
+        <button class="btn sm light" id="btn-pickloc">在地图上选位置</button>
+        <select id="radius" class="sort-select">
+          <option value="0">不限距离</option>
+          <option value="1000">1 公里内</option>
+          <option value="3000">3 公里内</option>
+          <option value="5000">5 公里内</option>
+          <option value="10000">10 公里内</option>
+        </select>
+        <span class="muted" id="loc-hint">正在获取我的位置…</span>
+      </div>
+      <div class="grid cards" id="task-list"></div>
+      <div class="map-wrap hide" id="task-map">
+        <div id="leaflet-map"></div>
+        <svg id="map-svg" viewBox="0 0 900 560" preserveAspectRatio="xMidYMid meet" style="display:none"></svg>
+        <div class="map-legend" id="map-legend"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 我的报名 -->
+  <section data-pane="applications" class="hide">
+    <div class="page-title">我的报名</div>
+    <div class="page-sub">企业录用后会生成订单，请在订单页完成打卡与成果提交。</div>
+    <div class="section">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>任务</th><th>类目</th><th>报酬</th><th>报名时间</th><th>状态</th><th>操作</th></tr></thead>
+          <tbody id="app-body"></tbody>
+        </table>
+      </div>
+      <div class="empty hide" id="app-empty">还没有报名记录，去任务大厅看看吧。</div>
+    </div>
+  </section>
+
+  <!-- 我的订单 -->
+  <section data-pane="orders" class="hide">
+    <div class="page-title">我的订单</div>
+    <div class="page-sub">履约流程：打卡 → 提交成果 → 企业验收 → 结算到账。</div>
+    <div class="list" id="order-list"></div>
+    <div class="empty hide" id="order-empty">暂无订单。</div>
+  </section>
+
+  <!-- 钱包 -->
+  <section data-pane="wallet" class="hide">
+    <div class="page-title">我的钱包</div>
+    <div class="page-sub">验收通过后按 9:1 分账，学生所得自动入账，可申请提现（演示 T+1）。</div>
+    <div class="grid stats" style="margin-bottom:16px;">
+      <div class="stat"><div class="k">可用余额（元）</div><div class="v orange" id="wallet-balance">0.00</div></div>
+      <div class="stat"><div class="k">已完成任务</div><div class="v" id="wallet-orders">0</div></div>
+      <div class="stat"><div class="k">累计收入（元）</div><div class="v" id="wallet-income">0.00</div></div>
+      <div class="stat"><div class="k">信用分</div><div class="v" id="wallet-credit">600</div></div>
+    </div>
+    <div class="section">
+      <h3>提现</h3>
+      <div class="row">
+        <input id="withdraw-amount" type="number" min="1" step="0.01" placeholder="提现金额" style="border:1px solid #d7dfeb;border-radius:9px;padding:9px 12px;font-size:13.5px;width:180px;">
+        <button class="btn orange" id="btn-withdraw">申请提现</button>
+        <span class="muted">演示环境：提现申请记录状态为「处理中」。</span>
+      </div>
+    </div>
+    <div class="section">
+      <h3>收入明细</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>任务</th><th>完成时间</th><th>成交价</th><th>平台服务费 10%</th><th>实得</th></tr></thead>
+          <tbody id="wallet-body"></tbody>
+        </table>
+      </div>
+      <div class="empty hide" id="wallet-empty">暂无收入记录。</div>
+    </div>
+  </section>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/mock-api.js"></script>
+<script src="js/common.js"></script>
+<script src="js/student.js"></script>
+</body>
+</html>

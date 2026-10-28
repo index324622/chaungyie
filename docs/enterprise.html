@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>企业端 · 兼职众包平台</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+</head>
+<body>
+<div class="topbar">
+  <div class="logo"><span class="dot"></span>兼职众包</div>
+  <div class="topnav" id="nav"></div>
+  <div class="spacer"></div>
+  <div class="userbox" id="userbox"></div>
+</div>
+
+<div class="container">
+  <div id="cert-banner" class="hide"></div>
+  <!-- 任务管理 -->
+  <section data-pane="tasks">
+    <div class="page-title">任务管理</div>
+    <div class="page-sub">发布后由平台审核上线；报名由你录用，录用即冻结该岗位任务款。</div>
+    <div class="list" id="my-task-list"></div>
+    <div class="empty hide" id="my-task-empty">还没有发布任务，去「发布任务」创建第一个吧。</div>
+  </section>
+
+  <!-- 发布任务 -->
+  <section data-pane="publish" class="hide">
+    <div class="page-title">发布任务</div>
+    <div class="page-sub">任务先审后发；需保证账户余额充足，录用时按单人报酬冻结托管。</div>
+    <div class="section">
+      <form id="publish-form">
+        <div class="form-grid">
+          <div class="field"><label>任务标题</label><input name="title" placeholder="如：门店周末小时工" required></div>
+          <div class="field"><label>任务类目</label>
+            <select name="category">
+              <option>门店兼职</option><option>校园推广</option><option>展会协助</option><option>问卷调研</option><option>数据标注</option><option>跑腿配送</option>
+            </select>
+          </div>
+          <div class="field"><label>工作城市</label><input name="city" value="长沙"></div>
+          <div class="field"><label>工作地点</label><input name="address" placeholder="如：五一广场地铁站 3 号口"></div>
+          <div class="field"><label>地图位置（用于距离与定位打卡）</label>
+            <select name="placePreset" id="place-preset">
+              <option value="">不标位置（线上任务）</option>
+              <option value="28.1955,112.9770,芙蓉区,五一广场地铁站 3 号口">五一广场</option>
+              <option value="28.1790,112.9450,岳麓区,湖南大学天马学生公寓">湖南大学</option>
+              <option value="28.1500,112.9300,岳麓区,中南大学校本部">中南大学</option>
+              <option value="28.1900,112.9500,岳麓区,湖南师范大学">湖南师范大学</option>
+              <option value="28.2320,113.0830,雨花区,湖南国际会展中心">湖南国际会展中心</option>
+            </select>
+          </div>
+          <input type="hidden" name="lat"><input type="hidden" name="lng"><input type="hidden" name="district">
+          <div class="field full"><label>在地图上点选工作地点（可选，更准确）</label>
+            <div id="publish-map" style="height:300px;border-radius:10px;overflow:hidden;background:#eef5fb;"></div>
+            <div class="muted" id="publish-map-hint">点击地图设置坐标，会自动填入地址；线上任务可忽略。</div>
+          </div>
+          <div class="field"><label>招募人数</label><input name="headcount" type="number" min="1" value="3"></div>
+          <div class="field"><label>单人报酬（元）</label><input name="price" type="number" min="1" step="0.01" value="80"></div>
+          <div class="field"><label>开始日期</label><input name="startDate" type="date"></div>
+          <div class="field"><label>结束日期</label><input name="endDate" type="date"></div>
+          <div class="field"><label>开始时间</label><input name="startTime" type="time" value="09:00"></div>
+          <div class="field"><label>结束时间</label><input name="endTime" type="time" value="18:00"></div>
+          <div class="field"><label>结算方式</label>
+            <select name="settleType"><option>完工结</option><option>当日结</option><option>按件结</option></select>
+          </div>
+          <div class="field full"><label>任务描述与验收标准</label><textarea name="desc" placeholder="工作内容、着装要求、验收标准等"></textarea></div>
+        </div>
+        <div class="row" style="margin-top:16px;">
+          <button class="btn primary" type="submit">提交审核</button>
+          <span class="muted">提交后进入「任务管理」，状态为待审核；运营审核通过后上线。选择地图位置后，学生端可按距离找活，打卡时会校验定位。</span>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- 订单验收 -->
+  <section data-pane="orders" class="hide">
+    <div class="page-title">订单验收</div>
+    <div class="page-sub">学生提交成果后验收；验收通过即按 9:1 分账，任务款不会退回企业账户。</div>
+    <div class="list" id="order-list"></div>
+    <div class="empty hide" id="order-empty">暂无订单。</div>
+  </section>
+
+  <!-- 账户 -->
+  <section data-pane="account" class="hide">
+    <div class="page-title">账户与账单</div>
+    <div class="page-sub">演示环境不接支付通道，账户余额为演示数据；可点击「演示充值」增加余额。</div>
+    <div class="row" style="margin-bottom:14px;">
+      <button class="btn orange" id="btn-recharge">演示充值</button>
+      <span class="muted">录用学生时按单人报酬冻结任务款，验收通过后扣款分账。</span>
+    </div>
+    <div class="grid stats" style="margin-bottom:16px;">
+      <div class="stat"><div class="k">账户余额（元）</div><div class="v orange" id="acc-balance">0.00</div></div>
+      <div class="stat"><div class="k">已发布任务</div><div class="v" id="acc-tasks">0</div></div>
+      <div class="stat"><div class="k">在招任务</div><div class="v" id="acc-open">0</div></div>
+      <div class="stat"><div class="k">信用分</div><div class="v" id="acc-credit">600</div></div>
+    </div>
+    <div class="section">
+      <h3>结算账单</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>订单</th><th>学生</th><th>结算时间</th><th>成交价</th><th>平台服务费</th><th>实际支出</th></tr></thead>
+          <tbody id="bill-body"></tbody>
+        </table>
+      </div>
+      <div class="empty hide" id="bill-empty">暂无已结算订单。</div>
+    </div>
+  </section>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/mock-api.js"></script>
+<script src="js/common.js"></script>
+<script src="js/enterprise.js"></script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>兼职众包平台 · 大学生兼职众包原型</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="login-wrap">
+  <div class="login-hero">
+    <h1>大学生兼职众包平台<br><span>可信撮合 · 履约保障 · 合规结算</span></h1>
+    <p>面向在校大学生的兼职众包平台原型：企业发布任务、平台审核、学生报名、在线签约、打卡验收、资金托管分账，一条闭环跑通。</p>
+    <div class="hero-points">
+      <div><i>1</i><span>企业实名 + 营业执照审核，任务先审后发，拦截押金与虚假岗位</span></div>
+      <div><i>2</i><span>任务款托管冻结，验收通过后按 9:1 自动分账，学生当天见收益</span></div>
+      <div><i>3</i><span>打卡照片与成果附件留存证据链，争议由运营仲裁，双向评价 + 信用分</span></div>
+      <div><i>4</i><span>运营后台：认证/任务审核、争议仲裁、SVG 数据看板；站内消息实时通知</span></div>
+    </div>
+  </div>
+  <div class="login-card">
+    <h2>登录平台</h2>
+    <div class="tip">静态演示版：无需注册，三个角色账号可直接体验；数据保存在当前浏览器（刷新/换设备会重置）。</div>
+    <form id="login-form">
+      <div class="form-grid" style="grid-template-columns:1fr;">
+        <div class="field"><label>账号</label><input name="username" autocomplete="username" placeholder="请输入账号"></div>
+        <div class="field"><label>密码</label><input name="password" type="password" autocomplete="current-password" placeholder="请输入密码"></div>
+        <button class="btn primary" type="submit" style="width:100%;padding:11px;">登 录</button>
+      </div>
+    </form>
+    <div class="quick">
+      <button data-quick="student">学生端 demo</button>
+      <button data-quick="company">企业端 demo</button>
+      <button data-quick="admin">运营后台 demo</button>
+    </div>
+    <div class="demo-tip">
+      <b>演示账号</b><br>
+      学生：student / 123456（已认证）<br>
+      企业：company / 123456（已认证，余额 5 万）<br>
+      运营：admin / 123456
+    </div>
+  </div>
+</div>
+<script src="js/mock-api.js"></script>
+<script src="js/common.js"></script>
+<script>
+const HOME = { student: 'student.html', enterprise: 'enterprise.html', admin: 'admin.html' };
+const QUICK = { student: 'student', company: 'company', admin: 'admin' };
+
+(function () {
+  const u = currentUser();
+  if (u && HOME[u.role]) location.href = HOME[u.role];
+
+  const form = document.getElementById('login-form');
+  async function login(username, password) {
+    try {
+      const d = await api('/api/login', { method: 'POST', body: { username, password } });
+      setAuth(d.token, d.user);
+      location.href = HOME[d.user.role] || 'index.html';
+    } catch (e) {
+      toast(e.message, 'err');
+    }
+  }
+  form.onsubmit = (ev) => {
+    ev.preventDefault();
+    const f = new FormData(form);
+    login(f.get('username'), f.get('password'));
+  };
+  document.querySelectorAll('[data-quick]').forEach((b) => {
+    b.onclick = () => {
+      const username = QUICK[b.getAttribute('data-quick')];
+      login(username, '123456');
+    };
+  });
+})();
+</script>
+</body>
+</html>
