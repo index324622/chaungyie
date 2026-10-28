@@ -1,0 +1,12 @@
+{
+  "name": "jianzhi-platform",
+  "version": "3.0.0",
+  "private": true,
+  "description": "大学生兼职众包平台可运行原型（零依赖 Node.js）",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: jianzhi-platform
+    runtime: node
+    plan: free
+    rootDir: website
+    buildCommand: npm install --omit=dev
+    startCommand: node server.js
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: NODE_VERSION
+        value: 20.11.1

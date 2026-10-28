@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: jianzhi-platform
+    runtime: node
+    plan: free
+    buildCommand: npm install --omit=dev
+    startCommand: node server.js
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+    # 免费实例文件系统是临时的：重启后 data/ 会被重置。
+    # 需要持久化请升级到付费实例并挂载 Disk（挂载路径 /opt/render/project/src/data）

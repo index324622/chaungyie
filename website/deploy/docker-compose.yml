@@ -1,0 +1,31 @@
+services:
+  app:
+    build: .
+    container_name: jianzhi-app
+    restart: unless-stopped
+    ports:
+      - "8788:8788"
+    environment:
+      - PORT=8788
+      - HOST=0.0.0.0
+    volumes:
+      - ./data:/app/data
+
+  # 有域名时，取消注释即可自动申请 HTTPS 证书（把 example.com 换成你的域名）
+  # caddy:
+  #   image: caddy:2-alpine
+  #   container_name: jianzhi-caddy
+  #   restart: unless-stopped
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./Caddyfile:/etc/caddy/Caddyfile:ro
+  #     - caddy_data:/data
+  #     - caddy_config:/config
+  #   depends_on:
+  #     - app
+
+# volumes:
+#   caddy_data:
+#   caddy_config:

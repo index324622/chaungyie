@@ -1,0 +1,6 @@
+# 运行数据与测试产物
+data/
+test_report.txt
+smoke_report.txt
+*.log
+node_modules/

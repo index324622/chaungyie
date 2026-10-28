@@ -1,0 +1,15 @@
+# 自动 HTTPS 反向代理示例
+# 1) 把 example.com 换成你的域名，并在 DNS 里把域名 A 记录解析到服务器公网 IP
+# 2) 本文件重命名为 Caddyfile，与 docker-compose.yml 放在同一目录
+# 3) 取消 docker-compose.yml 里 caddy 服务与 volumes 的注释，执行 docker compose up -d
+# Caddy 会自动申请 Let's Encrypt 证书并续期
+
+example.com {
+	encode gzip zstd
+	reverse_proxy app:8788
+}
+
+# 如需同时支持 www 子域：
+# www.example.com {
+# 	redir https://example.com{uri}
+# }

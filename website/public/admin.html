@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>运营后台 · 兼职众包平台</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="topbar">
+  <div class="logo"><span class="dot"></span>兼职众包 · 运营后台</div>
+  <div class="topnav" id="nav"></div>
+  <div class="spacer"></div>
+  <div class="userbox" id="userbox"></div>
+</div>
+
+<div class="container">
+  <!-- 数据看板 -->
+  <section data-pane="dashboard">
+    <div class="page-title">数据看板</div>
+    <div class="page-sub">平台核心指标：交易规模、服务费、待办审核与风险。</div>
+    <div class="grid stats" id="stat-grid" style="margin-bottom:18px;"></div>
+    <div class="chart-grid">
+      <div class="chart-card"><h3>订单状态分布</h3><div id="chart-status"></div></div>
+      <div class="chart-card"><h3>近 7 日成交额（托管分账口径）</h3><div id="chart-gmv"></div></div>
+      <div class="chart-card"><h3>任务类目分布</h3><div id="chart-cat"></div></div>
+    </div>
+    <div class="section">
+      <h3>最近订单</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>订单</th><th>任务</th><th>学生</th><th>企业</th><th>金额</th><th>状态</th></tr></thead>
+          <tbody id="recent-body"></tbody>
+        </table>
+      </div>
+      <div class="empty hide" id="recent-empty">暂无订单。</div>
+    </div>
+  </section>
+
+  <!-- 资质审核 -->
+  <section data-pane="verify" class="hide">
+    <div class="page-title">资质审核</div>
+    <div class="page-sub">学生学籍认证与企业营业执照审核；未认证账号不能报名或发布任务。</div>
+    <div class="list" id="pending-users"></div>
+    <div class="empty hide" id="users-empty">没有待审核账号。</div>
+  </section>
+
+  <!-- 任务审核 -->
+  <section data-pane="taskreview" class="hide">
+    <div class="page-title">任务审核</div>
+    <div class="page-sub">按负面清单审核：押金、培训贷、站外转账、虚假岗位一律驳回。</div>
+    <div class="list" id="pending-tasks"></div>
+    <div class="empty hide" id="tasks-empty">没有待审核任务。</div>
+  </section>
+
+  <!-- 争议仲裁 -->
+  <section data-pane="disputes" class="hide">
+    <div class="page-title">争议仲裁</div>
+    <div class="page-sub">订单进入争议后，核对打卡、成果附件与双方申诉，裁决退款或按约结算。</div>
+    <div class="list" id="dispute-list"></div>
+    <div class="empty hide" id="dispute-empty">暂无待仲裁争议。</div>
+  </section>
+
+  <!-- 订单与风控 -->
+  <section data-pane="orders" class="hide">
+    <div class="page-title">订单与风控</div>
+    <div class="page-sub">查看全平台订单状态，识别异常（长期未验收、争议）。</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>订单</th><th>任务</th><th>学生</th><th>企业</th><th>成交价</th><th>平台费</th><th>打卡定位</th><th>状态</th></tr></thead>
+        <tbody id="all-orders"></tbody>
+      </table>
+    </div>
+    <div class="empty hide" id="all-empty">暂无订单。</div>
+  </section>
+</div>
+
+<script src="js/common.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>
