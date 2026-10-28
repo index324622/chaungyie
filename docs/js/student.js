@@ -6,8 +6,8 @@ const TABS = [
   { id: 'wallet', label: '我的钱包' }
 ];
 const CAT_COLORS = { '门店兼职': '#2e75b6', '校园推广': '#548235', '展会协助': '#c55a11', '问卷调研': '#7030a0', '数据标注': '#3aa6a6', '跑腿配送': '#e6a23c' };
-const DEFAULT_CENTER = { lat: 28.1955, lng: 112.977, label: '默认位置：长沙五一广场' };
-const MAP_BOUNDS = { latMin: 28.13, latMax: 28.255, lngMin: 112.905, lngMax: 113.1 };
+const DEFAULT_CENTER = { lat: 36.81072, lng: 117.99585, label: '默认位置：山东理工大学（西校区）' };
+const MAP_BOUNDS = { latMin: 36.760, latMax: 36.865, lngMin: 117.945, lngMax: 118.075 };
 
 const page = {
   user: null, tasks: [], view: 'list',
@@ -82,22 +82,37 @@ async function locateMe(verbose) {
 }
 
 async function reverseGeocode(lat, lng) {
+  // 优先 Photon（中文地名较准），失败再退回 Nominatim，最后退回坐标
   try {
-    const url = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + lat + '&lon=' + lng + '&accept-language=zh-CN&zoom=16';
-    const res = await fetch(url, { headers: { Accept: 'application/json' } });
-    if (!res.ok) return '';
-    const d = await res.json();
-    return d.display_name ? String(d.display_name).slice(0, 80) : '';
-  } catch (e) {
-    return '';
-  }
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), 5000);
+    const res = await fetch('https://photon.komoot.io/reverse?lon=' + lng + '&lat=' + lat + '&limit=1&lang=zh', { signal: ctl.signal });
+    clearTimeout(timer);
+    if (res.ok) {
+      const d = await res.json();
+      const f = d.features && d.features[0];
+      if (f && f.properties) {
+        const p = f.properties;
+        const parts = [p.name, p.street, p.district, p.city].filter(Boolean);
+        if (parts.length) return parts.join(' ').slice(0, 80);
+      }
+    }
+  } catch (e) {}
+  try {
+    const res = await fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + lat + '&lon=' + lng + '&accept-language=zh-CN&zoom=16');
+    if (res.ok) {
+      const d = await res.json();
+      if (d.display_name) return String(d.display_name).slice(0, 80);
+    }
+  } catch (e) {}
+  return lat.toFixed(5) + ', ' + lng.toFixed(5);
 }
 
 function updateLocHint() {
   const hint = document.getElementById('loc-hint');
   if (!hint) return;
   if (page.userLoc) hint.textContent = '我的位置：' + (page.locLabel || (page.userLoc.lat.toFixed(4) + ', ' + page.userLoc.lng.toFixed(4)));
-  else hint.textContent = '未定位，地图默认显示长沙五一广场；可点「使用我的位置」';
+  else hint.textContent = '未定位，地图默认显示山东理工大学；可点「使用我的位置」';
 }
 
 function enterPickMode() {
@@ -191,9 +206,11 @@ function ensureMap() {
   document.getElementById('map-svg').style.display = 'none';
   const center = page.userLoc ? [page.userLoc.lat, page.userLoc.lng] : [DEFAULT_CENTER.lat, DEFAULT_CENTER.lng];
   page.map = L.map('leaflet-map', { zoomControl: true, scrollWheelZoom: true }).setView(center, 14);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '&copy; OpenStreetMap contributors'
+  // 高德地图瓦片（无需 Key），在国内可正常加载
+  L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+    subdomains: ['1', '2', '3', '4'],
+    maxZoom: 18,
+    attribution: '&copy; 高德地图'
   }).addTo(page.map);
   page.markerLayer = L.layerGroup().addTo(page.map);
   page.map.on('click', async (e) => {
@@ -270,11 +287,11 @@ function project(lat, lng) {
   return { x, y };
 }
 const LANDMARKS = [
-  { name: '五一广场', lat: 28.1955, lng: 112.977 },
-  { name: '湖南大学', lat: 28.18, lng: 112.94 },
-  { name: '中南大学', lat: 28.15, lng: 112.93 },
-  { name: '湖南师范大学', lat: 28.19, lng: 112.95 },
-  { name: '湖南国际会展中心', lat: 28.232, lng: 113.083 }
+  { name: '山东理工大学（西校区）', lat: 36.81072, lng: 117.99585 },
+  { name: '水晶街', lat: 36.81923, lng: 117.99756 },
+  { name: '齐盛湖公园', lat: 36.84138, lng: 117.98347 },
+  { name: '淄博印象汇', lat: 36.82227, lng: 118.04741 },
+  { name: '淄博国际会展中心', lat: 36.79033, lng: 117.98895 }
 ];
 function renderMapSVG() {
   const svg = document.getElementById('map-svg');

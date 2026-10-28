@@ -47,12 +47,13 @@ function ensurePublishMap() {
   const el = document.getElementById('publish-map');
   if (!el) return;
   const form = document.getElementById('publish-form');
-  const lat = Number(form.lat.value) || 28.1955;
-  const lng = Number(form.lng.value) || 112.977;
+  const lat = Number(form.lat.value) || 36.81072;
+  const lng = Number(form.lng.value) || 117.99585;
   page.publishMap = L.map('publish-map').setView([lat, lng], 13);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '&copy; OpenStreetMap contributors'
+  L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+    subdomains: ['1', '2', '3', '4'],
+    maxZoom: 18,
+    attribution: '&copy; 高德地图'
   }).addTo(page.publishMap);
   page.publishMap.on('click', async (e) => {
     const { lat, lng } = e.latlng;
@@ -82,12 +83,21 @@ function movePublishMarker(lat, lng) {
 
 async function reverseGeocode(lat, lng) {
   try {
-    const url = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + lat + '&lon=' + lng + '&accept-language=zh-CN&zoom=18';
-    const res = await fetch(url, { headers: { Accept: 'application/json' } });
-    if (!res.ok) return '';
-    const d = await res.json();
-    return d.display_name ? String(d.display_name).slice(0, 80) : '';
-  } catch (e) { return ''; }
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), 5000);
+    const res = await fetch('https://photon.komoot.io/reverse?lon=' + lng + '&lat=' + lat + '&limit=1&lang=zh', { signal: ctl.signal });
+    clearTimeout(timer);
+    if (res.ok) {
+      const d = await res.json();
+      const f = d.features && d.features[0];
+      if (f && f.properties) {
+        const p = f.properties;
+        const parts = [p.name, p.street, p.district, p.city].filter(Boolean);
+        if (parts.length) return parts.join(' ').slice(0, 80);
+      }
+    }
+  } catch (e) {}
+  return lat.toFixed(5) + ', ' + lng.toFixed(5);
 }
 
 function stars(avg) {
